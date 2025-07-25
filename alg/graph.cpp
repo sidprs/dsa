@@ -17,7 +17,7 @@ struct vertex{
   int index;
   T weight;
   int value;
-  bool visited;
+  bool visited = false;
 };
 
 template<typename T>
@@ -110,38 +110,58 @@ void Graph<T>::PrintMap() {
 template<class T>
 void Graph<T>::PrintBFS()
 {
- 
-  // 0 : 2, 3
-  // 1 : 1, 2, 3
-  int size = map.size();
   int source = 0;
   std::queue<int> q;
-  std::vector<bool> visited(size, false);
- 
-  std::vector<int> result(size);
-
-  q.push(map[source]->index);
-  visited[map[source]->index] = true;
+  std::unordered_map<int, bool> visited;  // Use map instead of vector
+  std::vector<int> result;
   
-  while(!q.empty()){
-      int curr = q.pop();
-      visited[curr] = true;
-
-      for(auto &v : map[curr]){
-        if(!visited[v]){
-          visited[v] = true;
-          q.push(v);
-        }
-
-      }
-
-
+  // Initialize all vertices as unvisited
+  for (const auto& [key, vec] : map) {
+    visited[key] = false;
   }
-  for(auto& v : result){
-    std::cout << v << std::endl;
+  
+  // Check if source exists in the graph
+  if (map.find(source) == map.end()) {
+    std::cout << "Source vertex " << source << " not found in graph" << std::endl;
+    return;
+  }
+  
+  // Push the source node to queue
+  q.push(source);
+  visited[source] = true;
+  
+  // BFS traversal
+  while(!q.empty()){
+    int curr = q.front();  // Get front element
+    q.pop();               // Remove front element
+    result.push_back(curr);
+    
+    // Visit all adjacent vertices
+    for(auto &vertex_ptr : map[curr]){
+      int adj_index = vertex_ptr->value;  // Use 'value' field which stores the connected vertex
+      if(visited.find(adj_index) != visited.end() && !visited[adj_index]){
+        visited[adj_index] = true;
+        q.push(adj_index);
+      }
+    }
+  }
+  
+  // Print the BFS traversal result
+  std::cout << "BFS traversal: ";
+  for(int i = 0; i <result.size(); i++)
+  {
+    if(i != result.size() - 1){
+      std::cout << result[i] << " -> ";
+    }
+    else{
+      std::cout << result[i]  << "\n";
+    }
+
+
   }
 
 }
+
   
 template<class T>
 void Graph<T>::PrintDFS()
@@ -187,14 +207,13 @@ int main (int argc, char *argv[]) {
   g.push(1, 3, 1);
   //g.push(1);
 
-
+  g.PrintMap();
+  g.PrintBFS();
   // 0 -> 3, 2
   // 1 -> 5, 2, 3
   // 2 -> 0, 1
   // 3 -> 0, 1
   // 5 -> 1
-  g.PrintMap();
-  g.PrintBFS();
 
   return 0;
 }
